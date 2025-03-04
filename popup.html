@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Toby</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/themes.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>New Toby</h1>
+            <div class="header-controls">
+                <button id="importCollections" class="import-btn" title="Import Collections">📥</button>
+                <button id="exportCollections" class="export-btn" title="Export Collections">📤</button>
+                <button id="themeToggle" class="theme-toggle">🌙</button>
+                <button id="newCollection" class="new-collection-btn">+ New Collection</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar with open tabs -->
+            <div class="sidebar">
+                <h2>Open Tabs</h2>
+                <div id="openTabsList" class="open-tabs-list"></div>
+            </div>
+
+            <!-- Collections area -->
+            <div class="collections-container">
+                <div id="collections" class="collections"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/themes.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/tabs.js"></script>
+    <script src="js/collections.js"></script>
+    <script src="js/items.js"></script>
+    <script src="js/favicon-handler.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    width: 800px;
+    height: 600px;
+    overflow: hidden;
+}
+
+/* App Container */
+.app-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent body scrolling */
+}
+
+/* Header */
+.header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    z-index: 10;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-right: 1rem;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.import-btn, .export-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    position: relative;
+}
+
+.import-btn:hover, .export-btn:hover {
+    background-color: var(--hover-color);
+}
+
+/* Buttons */
+button {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--button-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background: var(--button-hover-bg);
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    height: calc(100vh - 4rem);
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    border-right: 1px solid var(--border-color);
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.sidebar h2 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Collections Container */
+.collections-container {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 4rem);
+    scroll-behavior: smooth;
+    position: relative;
+}
+
+.collections {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 100%;
+    position: relative;
+    padding-bottom: 300px;
+}
+
+/* Collection */
+.collection {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease, opacity 0.2s ease;
+    position: relative;
+}
+
+.collection.collapsed {
+    transition: padding 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-bottom: 0.5rem;
+}
+
+.collection.collapsed .collection-header {
+    margin-bottom: 0;
+}
+
+.collection.dragging {
+    cursor: grabbing;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px dashed var(--accent-color);
+    background-color: var(--collection-drag-bg, rgba(0, 0, 0, 0.02));
+    z-index: 100;
+    opacity: 0.8;
+    transform: scale(1.02);
+    position: relative;
+}
+
+.collection.collapsed.dragging {
+    padding: 0.5rem 1rem;
+}
+
+.collection:hover {
+    border-color: var(--border-hover-color, #ccc);
+}
+
+.collection .collection-header {
+    cursor: grab;
+    position: relative;
+}
+
+.collection .collection-header::before {
+    content: "☰";
+    position: absolute;
+    left: -5px;
+    color: var(--text-color-secondary, #888);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateX(-10px);
+}
+
+.collection:hover .collection-header::before {
+    opacity: 0.5;
+    transform: translateX(0);
+}
+
+.collection.dragging .collection-header::before {
+    opacity: 0;
+}
+
+.collection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    transition: margin-bottom 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collection-title-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none; /* Prevent text selection on double click */
+}
+
+.collection-title-container:hover {
+    color: var(--accent-color);
+}
+
+.collection-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.collapse-icon {
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+                background-color 0.15s ease;
+    color: var(--text-color-secondary, #888);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.collapse-icon:hover {
+    background-color: var(--hover-color);
+    color: var(--text-color);
+    transform: scale(1.1);
+}
+
+.collection.collapsed .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.collection.collapsed .collapse-icon:hover {
+    transform: rotate(-90deg) scale(1.1);
+}
+
+.collection-items {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    opacity: 1;
+    will-change: max-height, opacity; /* Hint browser to optimize these animations */
+    max-height: 2000px;
+}
+
+.collection.collapsed .collection-items {
+    animation: collapseItems 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    pointer-events: none; /* Prevent interaction with hidden items */
+}
+
+.collection:not(.collapsed) .collection-items {
+    animation: expandItems 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.collection-items {
+    animation: none;
+}
+
+/* Animation keyframes for collapsing/expanding */
+@keyframes collapseItems {
+    0% {
+        max-height: 2000px;
+        opacity: 1;
+    }
+    30% {
+        opacity: 0;
+    }
+    100% {
+        max-height: 0;
+        opacity: 0;
+    }
+}
+
+@keyframes expandItems {
+    0% {
+        max-height: 0;
+        opacity: 0;
+    }
+    30% {
+        opacity: 0;
+    }
+    100% {
+        max-height: 2000px;
+        opacity: 1;
+    }
+}
+
+/* Items */
+.item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 4px;
+    background: var(--item-bg);
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.item:hover {
+    background: var(--item-hover-bg);
+}
+
+.item-favicon {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.5rem;
+    background-color: var(--favicon-bg-color, rgba(255, 255, 255, 0.8));
+    border-radius: 3px;
+    padding: 1px;
+    box-shadow: 0 0 0 1px var(--favicon-border-color, rgba(0, 0, 0, 0.1));
+    object-fit: contain;
+    filter: var(--favicon-filter);
+}
+
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    background-color: var(--tooltip-bg-color, rgba(0, 0, 0, 0.8));
+    color: var(--tooltip-text-color, white);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    z-index: 1000;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* Drag and Drop */
+.collection-drop-indicator {
+    height: 2px;
+    background-color: var(--accent-color);
+    margin: 4px 0;
+    transition: all 0.2s ease;
+}
+
+.drag-over {
+    transition: all 0.2s ease;
+}
+
+.drag-target {
+    background-color: var(--hover-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.item.dragging {
+    cursor: grabbing !important;
+    background-color: var(--item-drag-bg, rgba(0, 0, 0, 0.05)) !important;
+    border: 1px dashed var(--accent-color) !important;
+    z-index: 100;
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.collection.dragging .collection-header {
+    cursor: grabbing;
+}
+
+/* Notification */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    font-size: 14px;
+    max-width: 300px;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.notification.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.notification.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.notification.info {
+    background-color: #cce5ff;
+    color: #004085;
+    border: 1px solid #b8daff;
+}
