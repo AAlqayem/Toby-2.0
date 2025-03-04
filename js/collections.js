@@ -735,35 +735,72 @@ const collections = {
      * Toggle collapse state of a collection
      * @param {string} collectionId - Collection ID
      */
-    toggleCollapse: (collectionId) => {
+    toggleCollapse: function(collectionId) {
         const collectionEl = document.querySelector(`.collection[data-id="${collectionId}"]`);
         if (!collectionEl) return;
         
-        const collapseIcon = collectionEl.querySelector('.collapse-icon');
-        const isCurrentlyCollapsed = collectionEl.classList.contains('collapsed');
-        
-        // Toggle collapsed state
-        if (isCurrentlyCollapsed) {
-            // Expanding
-            collectionEl.classList.remove('collapsed');
-            collapseIcon.title = 'Collapse';
-        } else {
-            // Collapsing
-            collectionEl.classList.add('collapsed');
-            collapseIcon.title = 'Expand';
+        // Prevent multiple toggle actions during animation
+        if (collectionEl.classList.contains('expanding') || 
+            collectionEl.classList.contains('collapsing')) {
+            return;
         }
         
-        // Update state in memory and save
-        collections.collapsedCollections[collectionId] = !isCurrentlyCollapsed;
+        // Get the items container
+        const itemsContainer = collectionEl.querySelector('.collection-items');
+        if (!itemsContainer) return;
         
-        // Use requestAnimationFrame to save after the animation completes
-        // This avoids possible stuttering during the animation
-        requestAnimationFrame(() => {
-            // Delay the save operation slightly to prioritize UI smoothness
+        // Get current state
+        const isCollapsed = collectionEl.classList.contains('collapsed');
+        
+        // Update collapse icon immediately
+        const collapseIcon = collectionEl.querySelector('.collapse-icon');
+        if (collapseIcon) {
+            collapseIcon.title = isCollapsed ? 'Collapse' : 'Expand';
+            collapseIcon.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
+            collapseIcon.setAttribute('aria-label', isCollapsed ? 'Collapse collection' : 'Expand collection');
+        }
+        
+        if (isCollapsed) {
+            // If expanding
+            
+            // Reset any inline styles that may have been set during initial render
+            itemsContainer.style.removeProperty('max-height');
+            itemsContainer.style.removeProperty('opacity');
+            
+            // Set item indices for staggered animation
+            const items = collectionEl.querySelectorAll('.item');
+            items.forEach((item, index) => {
+                item.style.setProperty('--item-index', index);
+            });
+            
+            // Begin the expand animation
+            collectionEl.classList.add('expanding');
+            collectionEl.classList.remove('collapsed');
+            
+            // Remove expanding class after animation completes
             setTimeout(() => {
-                collections.save();
-            }, 100);
-        });
+                collectionEl.classList.remove('expanding');
+            }, 400); // Slightly longer than the animation duration
+        } else {
+            // If collapsing
+            
+            // Begin the collapse animation
+            collectionEl.classList.add('collapsing');
+            
+            // Add the collapsed class after a short delay
+            setTimeout(() => {
+                collectionEl.classList.add('collapsed');
+                
+                // Remove collapsing class after animation completes
+                setTimeout(() => {
+                    collectionEl.classList.remove('collapsing');
+                }, 200);
+            }, 10);
+        }
+        
+        // Update our storage
+        collections.collapsedCollections[collectionId] = !isCollapsed;
+        collections.save();
     },
 
     /**
@@ -851,9 +888,19 @@ const collections = {
                     'data-id': collection.id
                 });
                 
-                // Add collapsed class if collection is collapsed
+                // Create collection items container first but don't add it yet
+                const collectionItems = utils.createElement('div', {
+                    className: 'collection-items'
+                });
+                
+                // Pre-hide content of collapsed collections before adding to DOM
+                // This prevents the flash of content on page load
                 if (collections.collapsedCollections[collection.id]) {
+                    // Add collapsed class right away to prevent flash
                     collectionEl.classList.add('collapsed');
+                    // Set initial state of collection items
+                    collectionItems.style.maxHeight = '0';
+                    collectionItems.style.opacity = '0';
                 }
                 
                 const header = utils.createElement('div', {
@@ -912,21 +959,23 @@ const collections = {
                 });
 
                 const editBtn = utils.createElement('button', {
-                    className: 'edit-collection',
+                    className: 'edit-collection btn-ripple',
                     textContent: '✎',
                     title: 'Edit collection'
                 });
 
                 const deleteBtn = utils.createElement('button', {
-                    className: 'delete-collection',
+                    className: 'delete-collection btn-ripple',
                     textContent: '🗑️',
                     title: 'Delete collection'
                 });
 
                 const collapseIcon = utils.createElement('button', {
-                    className: 'collapse-icon',
+                    className: 'collapse-icon btn-ripple',
                     textContent: '▼',
-                    title: collections.collapsedCollections[collection.id] ? 'Expand' : 'Collapse'
+                    title: collections.collapsedCollections[collection.id] ? 'Expand' : 'Collapse',
+                    'aria-expanded': collections.collapsedCollections[collection.id] ? 'false' : 'true',
+                    'aria-label': collections.collapsedCollections[collection.id] ? 'Expand collection' : 'Collapse collection'
                 });
 
                 collapseIcon.addEventListener('click', (e) => {
@@ -951,9 +1000,8 @@ const collections = {
                 header.appendChild(titleContainer);
                 header.appendChild(buttonsContainer);
 
-                const itemsContainer = utils.createElement('div', {
-                    className: 'collection-items'
-                });
+                collectionEl.appendChild(header);
+                collectionEl.appendChild(collectionItems);
 
                 if (Array.isArray(collection.items)) {
                     collection.items.forEach(item => {
@@ -1027,12 +1075,10 @@ const collections = {
                             favicon: item.favicon
                         });
 
-                        itemsContainer.appendChild(itemEl);
+                        collectionItems.appendChild(itemEl);
                     });
                 }
 
-                collectionEl.appendChild(header);
-                collectionEl.appendChild(itemsContainer);
                 container.appendChild(collectionEl);
 
                 utils.makeDroppable(collectionEl, (data) => {

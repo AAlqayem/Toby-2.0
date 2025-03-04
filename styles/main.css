@@ -72,6 +72,46 @@ button:hover {
     background: var(--button-hover-bg);
 }
 
+/* Ripple effect for buttons */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+.btn-ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-ripple::after {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.2) 10%, transparent 10.01%);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    transform: scale(10, 10);
+    opacity: 0;
+    transition: transform 0.3s, opacity 0.5s;
+}
+
+.btn-ripple:active::after {
+    transform: scale(0, 0);
+    opacity: 0.3;
+    transition: 0s;
+}
+
 /* Main Content */
 .main-content {
     display: flex;
@@ -111,74 +151,71 @@ button:hover {
     padding-bottom: 300px;
 }
 
-/* Collection */
+/* Collection styles */
 .collection {
-    border: 1px solid var(--border-color);
+    background-color: var(--collection-bg, white);
     border-radius: 8px;
     padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     margin-bottom: 1rem;
-    transition: all 0.2s ease, opacity 0.2s ease;
     position: relative;
-}
-
-.collection.collapsed {
-    transition: padding 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    padding-bottom: 0.5rem;
-}
-
-.collection.collapsed .collection-header {
-    margin-bottom: 0;
-}
-
-.collection.dragging {
-    cursor: grabbing;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 1px dashed var(--accent-color);
-    background-color: var(--collection-drag-bg, rgba(0, 0, 0, 0.02));
-    z-index: 100;
-    opacity: 0.8;
-    transform: scale(1.02);
-    position: relative;
-}
-
-.collection.collapsed.dragging {
-    padding: 0.5rem 1rem;
+    transition: box-shadow 0.2s ease, transform 0.1s ease;
+    border-left: 3px solid transparent;
 }
 
 .collection:hover {
-    border-color: var(--border-hover-color, #ccc);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-left-color: var(--accent-color, #4285f4);
 }
 
-.collection .collection-header {
-    cursor: grab;
+.collection.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
     position: relative;
+    z-index: 10;
 }
 
-.collection .collection-header::before {
-    content: "☰";
-    position: absolute;
-    left: -5px;
-    color: var(--text-color-secondary, #888);
-    opacity: 0;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    transform: translateX(-10px);
+.collection.collapsed {
+    padding-bottom: 0.75rem;
 }
 
-.collection:hover .collection-header::before {
-    opacity: 0.5;
-    transform: translateX(0);
-}
-
-.collection.dragging .collection-header::before {
-    opacity: 0;
+.collection.collapsed .collection-header {
+    padding-bottom: 0;
 }
 
 .collection-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    transition: margin-bottom 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: grab;
+    padding-bottom: 0.5rem;
+    transition: padding 0.2s ease;
+}
+
+.collection-header:active {
+    cursor: grabbing;
+}
+
+.collection-header::before {
+    content: '';
+    position: absolute;
+    left: -1rem;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    opacity: 0;
+    background-color: var(--accent-color);
+    transition: opacity 0.2s ease;
+}
+
+.collection:hover .collection-header::before {
+    opacity: 1;
+}
+
+.collection-header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 .collection-title-container {
@@ -197,28 +234,30 @@ button:hover {
     font-weight: 600;
 }
 
-.collapse-icon {
+.edit-collection, .delete-collection, .collapse-icon {
     background: none;
     border: none;
-    font-size: 0.85rem;
+    font-size: 1rem;
     cursor: pointer;
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem;
     border-radius: 4px;
-    margin-left: 0.5rem;
-    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
-                background-color 0.15s ease;
-    color: var(--text-color-secondary, #888);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
+    transition: background-color 0.15s ease, transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-color-secondary, #888);
 }
 
-.collapse-icon:hover {
+.edit-collection:hover, .delete-collection:hover, .collapse-icon:hover {
     background-color: var(--hover-color);
     color: var(--text-color);
     transform: scale(1.1);
+}
+
+.collapse-icon {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .collection.collapsed .collapse-icon {
@@ -235,21 +274,35 @@ button:hover {
     flex-direction: column;
     gap: 0.5rem;
     opacity: 1;
-    will-change: max-height, opacity; /* Hint browser to optimize these animations */
+    will-change: max-height, opacity, transform; /* Hint browser to optimize these animations */
     max-height: 2000px;
+    animation: none; /* Initialize with no animation */
 }
 
 .collection.collapsed .collection-items {
-    animation: collapseItems 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
     pointer-events: none; /* Prevent interaction with hidden items */
 }
 
-.collection:not(.collapsed) .collection-items {
+.collection.collapsing .collection-items {
+    animation: collapseItems 160ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.collection.expanding .collection-items {
     animation: expandItems 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.collection-items {
+.collection.expanding .item {
+    animation: fadeInSlideUp 200ms ease-out forwards;
+    animation-delay: calc(var(--item-index, 0) * 20ms);
+    opacity: 0; /* Start transparent */
+}
+
+.collection:not(.expanding) .item {
     animation: none;
+    opacity: 1;
 }
 
 /* Animation keyframes for collapsing/expanding */
@@ -257,13 +310,17 @@ button:hover {
     0% {
         max-height: 2000px;
         opacity: 1;
+        transform: translateY(0);
     }
     30% {
-        opacity: 0;
+        opacity: 0.6;
+        transform: translateY(-3px);
     }
     100% {
         max-height: 0;
         opacity: 0;
+        transform: translateY(-8px);
+        visibility: hidden;
     }
 }
 
@@ -271,13 +328,29 @@ button:hover {
     0% {
         max-height: 0;
         opacity: 0;
+        transform: translateY(-8px);
+        visibility: visible;
     }
-    30% {
-        opacity: 0;
+    50% {
+        opacity: 0.5;
+        transform: translateY(-3px);
     }
     100% {
         max-height: 2000px;
         opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(5px);
+        visibility: visible;
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
