@@ -159,13 +159,29 @@ button:hover {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     margin-bottom: 1rem;
     position: relative;
-    transition: box-shadow 0.2s ease, transform 0.1s ease;
+    transition: box-shadow 0.2s ease, transform 0.1s ease, border-left-color 0.3s ease;
     border-left: 3px solid transparent;
 }
 
 .collection:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-left-color: var(--accent-color, #4285f4);
+    animation: collectionPulse 1.5s ease infinite;
+}
+
+@keyframes collectionPulse {
+    0% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-2px);
+    }
+    60% {
+        transform: translateY(1px);
+    }
+    100% {
+        transform: translateY(0);
+    }
 }
 
 .collection.dragging {
